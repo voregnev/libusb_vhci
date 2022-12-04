@@ -44,7 +44,7 @@
 #include <queue>
 #endif
 
-#include <linux/usb-vhci.h>
+#include <include/usb-vhci.h>
 
 #define USB_VHCI_DEVICE_FILE "/dev/usb-vhci"
 
