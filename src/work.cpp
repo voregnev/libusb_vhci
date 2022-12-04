@@ -38,7 +38,7 @@ namespace usb
 {
 	namespace vhci
 	{
-		work::work(uint8_t port) t : port(port), canceled(false)
+		work::work(uint8_t port)  : port(port), canceled(false)
 		{
 			if(port == 0) throw std::invalid_argument("port");
 		}
@@ -52,7 +52,7 @@ namespace usb
 			canceled = true;
 		}
 
-		process_urb_work::process_urb_work(uint8_t port, usb::urb* urb) :
+		process_urb_work::process_urb_work(uint8_t port, usb::urb* urb)  :
 			work(port),
 			urb(urb)
 		{

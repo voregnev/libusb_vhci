@@ -38,7 +38,7 @@
 
 namespace usb
 {
-	void urb::_cpy(const usb_vhci_urb& u) noexcept(false)
+	void urb::_cpy(const usb_vhci_urb& u) 
 	{
 		if(_urb.buffer_length)
 		{
@@ -52,7 +52,7 @@ namespace usb
 		}
 	}
 
-	void urb::_chk() noexcept(false)
+	void urb::_chk() 
 	{
 		switch(_urb.type)
 		{
@@ -70,7 +70,7 @@ namespace usb
 		}
 	}
 
-	urb::urb(const urb& urb) noexcept(false) : _urb(urb._urb)
+	urb::urb(const urb& urb)  : _urb(urb._urb)
 	{
 		_urb.buffer = NULL;
 		_urb.iso_packets = NULL;

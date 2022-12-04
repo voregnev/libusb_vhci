@@ -263,21 +263,21 @@ namespace usb
 		uint8_t get_device_address() const  { return _urb.devadr; }
 		uint8_t get_endpoint_address() const  { return _urb.epadr; }
 		uint8_t get_endpoint_number() const  { return _urb.epadr & 0x07; }
-		urb_type get_type() const ; }
+		urb_type get_type() const  { return static_cast<urb_type>(_urb.type); }
 		bool is_in() const  { return _urb.epadr & 0x80; }
-		bool is_out() const ; }
-		bool is_isochronous() const  == urb_type_isochronous; }
-		bool is_interrupt() const  == urb_type_interrupt; }
-		bool is_control() const  == urb_type_control; }
-		bool is_bulk() const  == urb_type_bulk; }
+		bool is_out() const  { return !is_in(); }
+		bool is_isochronous() const  { return get_type() == urb_type_isochronous; }
+		bool is_interrupt() const  { return get_type() == urb_type_interrupt; }
+		bool is_control() const  { return get_type() == urb_type_control; }
+		bool is_bulk() const  { return get_type() == urb_type_bulk; }
 		void set_status(int32_t value)  { _urb.status = value; }
-		void ack() ; }
-		void stall() ; }
+		void ack()  { set_status(USB_VHCI_STATUS_SUCCESS); }
+		void stall()  { set_status(USB_VHCI_STATUS_STALL); }
 		void set_buffer_actual(int32_t value)  { _urb.buffer_actual = value; }
 		void set_iso_error_count(int32_t value)  { _urb.error_count = value; }
 		void set_iso_status(int32_t index, int32_t value)  { _urb.iso_packets[index].status = value; }
-		void ack_iso(int32_t index) ; }
-		void stall_iso(int32_t index) ; }
+		void ack_iso(int32_t index)  { set_iso_status(index, USB_VHCI_STATUS_SUCCESS); }
+		void stall_iso(int32_t index)  { set_iso_status(index, USB_VHCI_STATUS_STALL); }
 		void set_iso_packet_actual(int32_t index, int32_t value)  { _urb.iso_packets[index].packet_actual = value; }
 		bool is_short_not_ok() const  { return _urb.flags & USB_VHCI_URB_FLAGS_SHORT_NOT_OK; }
 		bool is_zero_packet() const  { return _urb.flags & USB_VHCI_URB_FLAGS_ZERO_PACKET; }
@@ -295,7 +295,7 @@ namespace usb
 			lock(const lock&) ;
 
 		public:
-			explicit lock(volatile pthread_mutex_t& m) 
+			explicit lock(volatile pthread_mutex_t& m)  : mutex(const_cast<pthread_mutex_t&>(m))
 			{
 				pthread_mutex_lock(&mutex);
 			}
@@ -314,7 +314,7 @@ namespace usb
 			uint8_t flags;
 
 		public:
-			port_stat()  { }
+			port_stat()  : status(0), change(0), flags(0) { }
 			port_stat(uint16_t status, uint16_t change, uint8_t flags)  :
 				status(status),
 				change(change),
@@ -438,7 +438,7 @@ namespace usb
 				void* arg;
 
 			public:
-				callback(void (*func)(void*, hcd&) 
+				callback(void (*func)(void*, hcd&) , void* arg)  : func(func), arg(arg)
 				{
 					if(!func) throw std::invalid_argument("func");
 				}
@@ -448,10 +448,10 @@ namespace usb
 					return func == other.func && arg == other.arg;
 				}
 
-				bool operator!=(const callback& other) const ; }
-				void (*get_func() const  { return func; }
+				bool operator!=(const callback& other) const  { return !(*this == other); }
+				void (*get_func() const )(void*, hcd&)  { return func; }
 				void* get_arg() const  { return arg; }
-				void call(hcd& from) const ; }
+				void call(hcd& from) const  { (*func)(arg, from); }
 			};
 
 		private:
@@ -482,7 +482,7 @@ namespace usb
 			void enqueue_work(work* w) ;
 			void init_bg_thread() volatile ;
 			void join_bg_thread() volatile ;
-			pthread_mutex_t& get_lock() volatile ; }
+			pthread_mutex_t& get_lock() volatile  { return const_cast<pthread_mutex_t&>(_lock); }
 			bool is_thread_shutdown() const volatile  { return thread_shutdown; }
 
 		public:
@@ -510,8 +510,8 @@ namespace usb
 			{
 				uint8_t adr;
 				port_stat stat;
-				_port_info()  { }
-				_port_info(uint8_t adr, const port_stat& stat)  { }
+				_port_info()  : adr(0xff), stat() { }
+				_port_info(uint8_t adr, const port_stat& stat)  : adr(adr), stat(stat) { }
 			};
 
 			int fd;
@@ -533,7 +533,7 @@ namespace usb
 			virtual ~local_hcd() ;
 
 			int32_t get_vhci_id() volatile  { return id; }
-			const std::string& get_bus_id() volatile ; }
+			const std::string& get_bus_id() volatile  { return const_cast<const std::string&>(bus_id); }
 			int32_t get_usb_bus_num() volatile  { return usb_bus_num; }
 			virtual void bg_work() volatile ;
 			virtual const port_stat& get_port_stat(uint8_t port) volatile ;
