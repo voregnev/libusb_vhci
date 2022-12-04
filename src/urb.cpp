@@ -1,3 +1,33 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright (C) 2009-2019 Michael Singer <michael@a-singer.de>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the copyright holder nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -8,7 +38,7 @@
 
 namespace usb
 {
-	void urb::_cpy(const usb_vhci_urb& u) //throw(std::bad_alloc)
+	void urb::_cpy(const usb_vhci_urb& u) noexcept(false)
 	{
 		if(_urb.buffer_length)
 		{
@@ -22,13 +52,13 @@ namespace usb
 		}
 	}
 
-	void urb::_chk() throw(std::invalid_argument)
+	void urb::_chk() noexcept(false)
 	{
 		switch(_urb.type)
 		{
 		case USB_VHCI_URB_TYPE_ISO:
 			if(_urb.packet_count && !_urb.buffer_length)
-				noexpect(std::invalid_argument("urb"));
+				throw std::invalid_argument("urb");
 			break;
 		case USB_VHCI_URB_TYPE_INT:
 		case USB_VHCI_URB_TYPE_CONTROL:
@@ -40,7 +70,7 @@ namespace usb
 		}
 	}
 
-	urb::urb(const urb& urb) throw(std::bad_alloc) : _urb(urb._urb)
+	urb::urb(const urb& urb) noexcept(false) : _urb(urb._urb)
 	{
 		_urb.buffer = NULL;
 		_urb.iso_packets = NULL;
@@ -66,7 +96,7 @@ namespace usb
 	         uint8_t bRequest,
 	         uint16_t wValue,
 	         uint16_t wIndex,
-	         uint16_t wLength) throw(std::invalid_argument, std::bad_alloc) : _urb()
+	         uint16_t wLength)  : _urb()
 	{
 		_urb.handle = handle;
 		_urb.buffer_length = buffer_length;
@@ -156,7 +186,7 @@ namespace usb
 		}
 	}
 
-	urb::urb(const usb_vhci_urb& urb) throw(std::invalid_argument, std::bad_alloc) : _urb(urb)
+	urb::urb(const usb_vhci_urb& urb)  : _urb(urb)
 	{
 		_urb.buffer = NULL;
 		_urb.iso_packets = NULL;
@@ -164,7 +194,7 @@ namespace usb
 		_cpy(urb);
 	}
 
-	urb::urb(const usb_vhci_urb& urb, bool own) throw(std::invalid_argument, std::bad_alloc) : _urb(urb)
+	urb::urb(const usb_vhci_urb& urb, bool own)  : _urb(urb)
 	{
 		if(!own)
 		{
@@ -183,7 +213,7 @@ namespace usb
 		}
 	}
 
-	urb::~urb() throw()
+	urb::~urb() 
 	{
 		if(_urb.buffer)
 			delete[] _urb.buffer;
@@ -191,7 +221,7 @@ namespace usb
 			delete[] _urb.iso_packets;
 	}
 
-	urb& urb::operator=(const urb& urb) throw(std::bad_alloc)
+	urb& urb::operator=(const urb& urb) 
 	{
 		if(_urb.buffer)
 			delete[] _urb.buffer;
@@ -204,7 +234,7 @@ namespace usb
 		return *this;
 	}
 
-	void urb::set_iso_results() throw(std::logic_error)
+	void urb::set_iso_results() 
 	{
 		if(!is_isochronous())
 			throw std::logic_error("not an isochronous urb");
