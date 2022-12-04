@@ -38,34 +38,34 @@ namespace usb
 {
 	namespace vhci
 	{
-		work::work(uint8_t port) throw(std::invalid_argument) : port(port), canceled(false)
+		work::work(uint8_t port) t : port(port), canceled(false)
 		{
 			if(port == 0) throw std::invalid_argument("port");
 		}
 
-		work::~work() throw()
+		work::~work() 
 		{
 		}
 
-		void work::cancel() throw()
+		void work::cancel() 
 		{
 			canceled = true;
 		}
 
-		process_urb_work::process_urb_work(uint8_t port, usb::urb* urb) throw(std::invalid_argument) :
+		process_urb_work::process_urb_work(uint8_t port, usb::urb* urb) :
 			work(port),
 			urb(urb)
 		{
 			if(!urb) throw std::invalid_argument("urb");
 		}
 
-		process_urb_work::process_urb_work(const process_urb_work& work) throw(std::bad_alloc) :
+		process_urb_work::process_urb_work(const process_urb_work& work)  :
 			usb::vhci::work(work),
 			urb(new usb::urb(*work.urb))
 		{
 		}
 
-		process_urb_work& process_urb_work::operator=(const process_urb_work& work) throw(std::bad_alloc)
+		process_urb_work& process_urb_work::operator=(const process_urb_work& work) 
 		{
 			usb::vhci::work::operator=(work);
 			delete urb;
@@ -73,18 +73,18 @@ namespace usb
 			return *this;
 		}
 
-		process_urb_work::~process_urb_work() throw()
+		process_urb_work::~process_urb_work() 
 		{
 			delete urb;
 		}
 
-		cancel_urb_work::cancel_urb_work(uint8_t port, uint64_t handle) throw(std::invalid_argument) :
+		cancel_urb_work::cancel_urb_work(uint8_t port, uint64_t handle)  :
 			work(port),
 			handle(handle)
 		{
 		}
 
-		port_stat_work::port_stat_work(uint8_t port, const port_stat& stat) throw(std::invalid_argument) :
+		port_stat_work::port_stat_work(uint8_t port, const port_stat& stat)  :
 			work(port),
 			stat(stat),
 			trigger_flags(0)
@@ -93,7 +93,7 @@ namespace usb
 
 		port_stat_work::port_stat_work(uint8_t port,
 		                               const port_stat& stat,
-		                               const port_stat& prev) throw(std::invalid_argument) :
+		                               const port_stat& prev)  :
 			work(port),
 			stat(stat),
 			trigger_flags(0)

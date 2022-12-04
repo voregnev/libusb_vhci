@@ -38,7 +38,7 @@ namespace usb
 {
 	namespace vhci
 	{
-		port_stat::~port_stat() throw()
+		port_stat::~port_stat() 
 		{
 		}
 	}
